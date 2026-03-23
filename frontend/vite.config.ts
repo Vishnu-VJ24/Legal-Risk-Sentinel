@@ -10,6 +10,14 @@ export default defineConfig(({ command }) => ({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'assets/[name].css';
+          }
+          return 'assets/[name][extname]';
+        },
         manualChunks: {
           'vendor-recharts': ['recharts'],
           pdf: ['react-pdf', 'pdfjs-dist'],

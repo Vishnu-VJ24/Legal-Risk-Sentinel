@@ -5,3 +5,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .DS_Store
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/tsconfig.app.tsbuildinfo
+frontend/tsconfig.node.tsbuildinfo
