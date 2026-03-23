@@ -35,6 +35,12 @@ export const LandingPage = () => {
           ctaHref="/analyze"
           secondaryText="View Repository"
           secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
+          bottomImage={{
+            light:
+              'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
+            dark:
+              'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
+          }}
           gridOptions={{
             angle: 64,
             opacity: 0.42,

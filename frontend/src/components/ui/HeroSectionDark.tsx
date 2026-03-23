@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { ButtonWithIcon } from './ButtonWithIcon';
+import { Vortex } from './Vortex';
 
 interface HeroSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
@@ -111,12 +113,7 @@ export const HeroSectionDark = React.forwardRef<HTMLDivElement, HeroSectionProps
                 {description}
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <a
-                  href={ctaHref}
-                  className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-semibold text-white transition hover:scale-[1.02]"
-                >
-                  {ctaText}
-                </a>
+                <ButtonWithIcon href={ctaHref} label={ctaText} />
                 <a
                   href={secondaryHref}
                   className="inline-flex items-center justify-center rounded-full border border-border bg-background/60 px-8 py-4 text-sm font-semibold text-text-primary transition hover:border-primary/40"
@@ -127,12 +124,30 @@ export const HeroSectionDark = React.forwardRef<HTMLDivElement, HeroSectionProps
             </div>
             {bottomImage ? (
               <div className="relative z-10 mx-auto mt-16 max-w-5xl px-2 sm:px-4">
-                <div className="overflow-hidden rounded-[28px] border border-border bg-background/70 p-3 shadow-2xl">
-                  <img
-                    src={bottomImage.dark}
-                    className="h-[260px] w-full rounded-[20px] object-cover sm:h-[420px]"
-                    alt="LexAI dashboard preview"
-                  />
+                <div className="overflow-hidden rounded-[28px] border border-border bg-background/70 shadow-2xl">
+                  <Vortex
+                    particleCount={110}
+                    baseHue={245}
+                    className="grid min-h-[280px] gap-8 px-6 py-8 sm:min-h-[420px] sm:px-10 sm:py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end"
+                  >
+                    <div className="self-start">
+                      <p className="text-xs uppercase tracking-[0.22em] text-secondary">Live Review Workspace</p>
+                      <h3 className="mt-4 text-2xl font-semibold sm:text-3xl">
+                        Clause extraction, scoring, and negotiation guidance in one workspace.
+                      </h3>
+                      <p className="mt-4 max-w-xl text-sm leading-7 text-text-secondary sm:text-base">
+                        The landing experience now has a kinetic background and stronger CTA treatment, while the
+                        underlying upload and results flow stays untouched and stable.
+                      </p>
+                    </div>
+                    <div className="rounded-[24px] border border-border bg-surface/85 p-4 backdrop-blur">
+                      <img
+                        src={bottomImage.dark}
+                        className="h-[220px] w-full rounded-[18px] object-cover sm:h-[300px]"
+                        alt="LexAI dashboard preview"
+                      />
+                    </div>
+                  </Vortex>
                 </div>
               </div>
             ) : null}
