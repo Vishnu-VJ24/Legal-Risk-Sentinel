@@ -22,7 +22,10 @@ const highlightColors = {
 
 export const PdfViewerPanel = ({ clauses, documentUrl, isPdf, onSelectClause, selectedClauseId }: PdfViewerPanelProps) => {
   const [pageNumber, setPageNumber] = useState(1);
-  const pageClauses = useMemo(() => clauses.filter((clause) => clause.page_number === pageNumber), [clauses, pageNumber]);
+  const pageClauses = useMemo(
+    () => (clauses ?? []).filter((clause) => clause.page_number === pageNumber),
+    [clauses, pageNumber],
+  );
 
   if (!documentUrl || !isPdf) {
     return (

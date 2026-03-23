@@ -19,7 +19,7 @@ export const ClauseListPanel = ({
   onFilterChange,
   selectedClauseId,
 }: ClauseListPanelProps) => {
-  const sortedClauses = useMemo(() => [...clauses].sort((a, b) => b.risk_score - a.risk_score), [clauses]);
+  const sortedClauses = useMemo(() => [...(clauses ?? [])].sort((a, b) => b.risk_score - a.risk_score), [clauses]);
 
   return (
     <section className="rounded-[28px] border border-border bg-surface/85 p-6">
@@ -30,7 +30,7 @@ export const ClauseListPanel = ({
         </p>
       </div>
       <div className="mt-5">
-        <ClauseFilters clauseTypes={clauseTypes} filters={filters} onChange={onFilterChange} />
+        <ClauseFilters clauseTypes={clauseTypes ?? []} filters={filters} onChange={onFilterChange} />
       </div>
       <div className="mt-6 max-h-[980px] space-y-4 overflow-y-auto pr-1">
         {sortedClauses.map((clause) => (

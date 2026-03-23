@@ -9,11 +9,12 @@ import { RiskOverviewPanel } from './RiskOverviewPanel';
 interface ResultsDashboardProps {
   documentUrl?: string;
   isPdf?: boolean;
-  results: AnalysisResult;
+  results?: AnalysisResult | null;
 }
 
 export const ResultsDashboard = ({ documentUrl, isPdf, results }: ResultsDashboardProps) => {
-  const { clauseTypes, filteredClauses, filters, setFilters } = useClauseFilter(results.clauses);
+  const clauses = results?.clauses ?? [];
+  const { clauseTypes, filteredClauses, filters, setFilters } = useClauseFilter(clauses);
   const [selectedClauseId, setSelectedClauseId] = useState<string>();
 
   const selectedClause = useMemo(
@@ -33,7 +34,7 @@ export const ResultsDashboard = ({ documentUrl, isPdf, results }: ResultsDashboa
       <RiskOverviewPanel results={results} />
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <PdfViewerPanel
-          clauses={results.clauses}
+          clauses={clauses}
           documentUrl={documentUrl}
           isPdf={isPdf}
           onSelectClause={setSelectedClauseId}

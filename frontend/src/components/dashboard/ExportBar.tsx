@@ -1,17 +1,23 @@
 import type { AnalysisResult } from '../../types/contracts';
 
 interface ExportBarProps {
-  results: AnalysisResult;
+  results?: AnalysisResult | null;
 }
 
 export const ExportBar = ({ results }: ExportBarProps) => {
+  const clauses = results?.clauses ?? [];
+  const documentName = results?.document_name ?? 'contract';
+  const overallRiskScore = results?.overall_risk_score ?? 0;
+  const totalClauses = results?.total_clauses ?? 0;
+  const sessionId = results?.session_id ?? '';
+
   const downloadReport = () => {
     const reportWindow = window.open('', '_blank', 'noopener,noreferrer');
     if (!reportWindow) {
       return;
     }
 
-    const clauseMarkup = results.clauses
+    const clauseMarkup = clauses
       .map(
         (clause) => `
           <section style="margin-bottom:24px;padding:16px;border:1px solid #d9dbe8;border-radius:16px;">
@@ -36,8 +42,8 @@ export const ExportBar = ({ results }: ExportBarProps) => {
         </head>
         <body>
           <h1>LexAI Contract Analysis Report</h1>
-          <p>Document: ${results.document_name}</p>
-          <p>Overall Risk Score: ${results.overall_risk_score} | Total Clauses: ${results.total_clauses}</p>
+          <p>Document: ${documentName}</p>
+          <p>Overall Risk Score: ${overallRiskScore} | Total Clauses: ${totalClauses}</p>
           ${clauseMarkup}
         </body>
       </html>
@@ -48,7 +54,7 @@ export const ExportBar = ({ results }: ExportBarProps) => {
   };
 
   const copyHighRiskClauses = async () => {
-    const content = results.clauses
+    const content = clauses
       .filter((clause) => clause.risk_score >= 7)
       .map((clause) => `${clause.type}\n${clause.text}`)
       .join('\n\n');
@@ -56,7 +62,7 @@ export const ExportBar = ({ results }: ExportBarProps) => {
   };
 
   const shareResults = async () => {
-    const url = `${window.location.origin}/results/${results.session_id}`;
+    const url = `${window.location.origin}/results/${sessionId}`;
     await navigator.clipboard.writeText(url);
   };
 
