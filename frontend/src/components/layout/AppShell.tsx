@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
+import { HeartFavorite } from '../ui/HeartFavorite';
 import { Header } from './Header';
 
 export const AppShell = () => {
@@ -17,6 +18,9 @@ export const AppShell = () => {
       >
         <Outlet />
       </main>
+      <div className="pointer-events-none fixed bottom-5 right-4 z-40 sm:bottom-7 sm:right-6">
+        <HeartFavorite className="pointer-events-auto" />
+      </div>
     </div>
   );
 };
