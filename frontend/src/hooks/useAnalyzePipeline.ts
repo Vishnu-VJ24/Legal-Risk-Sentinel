@@ -14,11 +14,24 @@ const progressSteps: Array<{ stage: PipelineStage; max: number }> = [
 export const useAnalyzePipeline = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState<PipelineStage>('parsing');
 
   const analyzeMutation = useMutation({
-    mutationFn: uploadContract,
+    mutationFn: async (uploadFile: File) => {
+      setIsWarmingUp(false);
+      const warmingTimer = window.setTimeout(() => {
+        setIsWarmingUp(true);
+      }, 6000);
+
+      try {
+        return await uploadContract(uploadFile);
+      } finally {
+        window.clearTimeout(warmingTimer);
+        setIsWarmingUp(false);
+      }
+    },
     onSuccess: (data, uploadFile) => {
       setSessionId(data.session_id);
       setFile(uploadFile);
@@ -58,6 +71,7 @@ export const useAnalyzePipeline = () => {
   const reset = useCallback(() => {
     setSessionId(null);
     setFile(null);
+    setIsWarmingUp(false);
     setProgress(0);
     setStage('parsing');
     analyzeMutation.reset();
@@ -68,6 +82,7 @@ export const useAnalyzePipeline = () => {
     error: analyzeMutation.error ?? resultsQuery.error,
     file,
     isAnalyzing: analyzeMutation.isPending || (!!sessionId && !resultsQuery.data),
+    isWarmingUp,
     progress,
     results: resultsQuery.data as AnalysisResult | null | undefined,
     reset,

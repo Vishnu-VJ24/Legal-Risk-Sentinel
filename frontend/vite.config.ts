@@ -7,11 +7,12 @@ export default defineConfig(({ command }) => ({
   base: command === 'build' ? `/${repoName}/` : '/',
   plugins: [react()],
   build: {
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: {
+          'vendor-recharts': ['recharts'],
           pdf: ['react-pdf', 'pdfjs-dist'],
-          charts: ['recharts'],
           motion: ['framer-motion'],
         },
       },

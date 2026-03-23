@@ -2,6 +2,11 @@ import { AxiosError } from 'axios';
 import { apiClient } from './client';
 import type { AnalysisResult, AnalyzeResponse } from '../types/contracts';
 
+export const checkApiHealth = async (): Promise<{ status: string }> => {
+  const { data } = await apiClient.get<{ status: string }>('/health');
+  return data;
+};
+
 export const uploadContract = async (file: File): Promise<AnalyzeResponse> => {
   const formData = new FormData();
   formData.append('file', file);

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { checkApiHealth } from '../api/contracts';
 import { FileDropzone } from '../components/analyze/FileDropzone';
 import { PipelineProgress } from '../components/analyze/PipelineProgress';
 import { SectionHeading } from '../components/common/SectionHeading';
@@ -13,8 +15,15 @@ const getErrorMessage = (error: unknown) => {
 
 export const AnalyzePage = () => {
   const [customError, setCustomError] = useState<string>();
-  const { analyze, error, file, isAnalyzing, progress, reset, results, stage } = useAnalyzePipeline();
+  const { analyze, error, file, isAnalyzing, isWarmingUp, progress, reset, results, stage } = useAnalyzePipeline();
   const [documentUrl, setDocumentUrl] = useState<string>();
+
+  const healthQuery = useQuery({
+    queryKey: ['api-health'],
+    queryFn: checkApiHealth,
+    retry: 1,
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     if (!file) {
@@ -44,7 +53,12 @@ export const AnalyzePage = () => {
           });
         }}
       />
-      {(isAnalyzing || results) && <PipelineProgress progress={progress} stage={stage} />}
+      {healthQuery.isError ? (
+        <p className="text-sm text-risk-critical">
+          Backend is unreachable. Verify the Space is running and `VITE_API_BASE_URL` points to the live API.
+        </p>
+      ) : null}
+      {(isAnalyzing || results) && <PipelineProgress isWarmingUp={isWarmingUp} progress={progress} stage={stage} />}
       {results ? <ResultsDashboard results={results} documentUrl={documentUrl} isPdf={file?.type === 'application/pdf'} /> : null}
     </div>
   );
