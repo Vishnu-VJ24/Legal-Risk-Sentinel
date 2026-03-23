@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { BrainCircuit, FileSearch, ShieldAlert } from 'lucide-react';
-import { HeroSectionDark } from '../components/ui/HeroSectionDark';
+import { ChevronRight, BrainCircuit, FileSearch, ShieldAlert } from 'lucide-react';
+import { ButtonWithIcon } from '../components/ui/ButtonWithIcon';
 import { Vortex } from '../components/ui/Vortex';
 
 const features = [
@@ -33,18 +33,31 @@ export const LandingPage = () => {
             className="flex min-h-[520px] items-center sm:min-h-[600px]"
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(191,90,242,0.24),transparent_32%),radial-gradient(circle_at_75%_25%,rgba(236,72,153,0.16),transparent_28%)]" />
-            <HeroSectionDark
-              title="AI Contract Intelligence"
-              subtitle={{
-                regular: 'Understand Every Clause. ',
-                gradient: 'Before You Sign.',
-              }}
-              description="LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review feels fast, structured, and recruiter-demo ready."
-              ctaText="Start Analysis"
-              ctaHref="/analyze"
-              secondaryText="View Repository"
-              secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
-            />
+            <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-6 py-20 text-center sm:px-10 lg:px-12 lg:py-28">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-5 py-2 text-sm font-medium text-text-secondary backdrop-blur-md">
+                <span>AI Contract Intelligence</span>
+                <ChevronRight className="h-4 w-4 text-primary" />
+              </div>
+              <h1 className="mt-6 max-w-4xl text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl lg:text-7xl">
+                <span>Understand Every Clause. </span>
+                <span className="bg-gradient-to-r from-fuchsia-400 via-violet-400 to-purple-300 bg-clip-text text-transparent">
+                  Before You Sign.
+                </span>
+              </h1>
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
+                LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review
+                feels fast, structured, and recruiter-demo ready.
+              </p>
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <ButtonWithIcon href="/analyze" label="Start Analysis" />
+                <a
+                  href="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/25 px-8 py-4 text-sm font-semibold text-text-primary transition hover:border-primary/40 hover:bg-black/35"
+                >
+                  View Repository
+                </a>
+              </div>
+            </div>
           </Vortex>
         </section>
       </motion.div>
