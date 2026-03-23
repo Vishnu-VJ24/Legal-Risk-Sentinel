@@ -14,4 +14,6 @@ export const router = createBrowserRouter([
       { path: 'results/:sessionId', element: <ResultsPage /> },
     ],
   },
-]);
+], {
+  basename: import.meta.env.BASE_URL,
+});

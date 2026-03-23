@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const repoName = 'lexai';
+const repoName = 'Legal-Risk-Sentinel';
 
-export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? `/${repoName}/` : '/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? `/${repoName}/` : '/',
   plugins: [react()],
   build: {
     rollupOptions: {
@@ -20,4 +20,4 @@ export default defineConfig({
   server: {
     port: 5173,
   },
-});
+}));
