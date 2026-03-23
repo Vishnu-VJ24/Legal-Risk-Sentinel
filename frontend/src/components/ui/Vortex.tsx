@@ -37,9 +37,9 @@ export const Vortex = ({
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random(),
       y: Math.random(),
-      driftX: (Math.random() - 0.5) * 0.0016,
-      driftY: (Math.random() - 0.5) * 0.0012,
-      size: 2.4 + Math.random() * 7.2,
+      driftX: (Math.random() - 0.5) * 0.001,
+      driftY: (Math.random() - 0.5) * 0.00075,
+      size: 0.8 + Math.random() * 5.4,
       pulse: Math.random() * Math.PI * 2,
       swirl: Math.random() * Math.PI * 2,
     }));
@@ -62,15 +62,15 @@ export const Vortex = ({
         particle.x = (particle.x + particle.driftX + 1) % 1;
         particle.y = (particle.y + particle.driftY + 1) % 1;
 
-        const swirlRadius = 18 + (index % 7) * 6;
-        const x = particle.x * width + Math.cos(tick * 0.01 + particle.swirl) * swirlRadius;
-        const y = particle.y * height + Math.sin(tick * 0.012 + particle.swirl) * swirlRadius;
+        const swirlRadius = 12 + (index % 7) * 4;
+        const x = particle.x * width + Math.cos(tick * 0.006 + particle.swirl) * swirlRadius;
+        const y = particle.y * height + Math.sin(tick * 0.007 + particle.swirl) * swirlRadius;
         const hue =
           index % 6 === 0
             ? 148 + ((tick * 0.18 + index * 3) % 24)
             : baseHue + ((index * 11 + tick * 0.28) % 34);
         const alpha = 0.26 + ((index % 5) * 0.07);
-        const radius = particle.size + Math.sin(tick * 0.02 + particle.pulse) * 1.2;
+        const radius = particle.size + Math.sin(tick * 0.012 + particle.pulse) * 0.8;
 
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
