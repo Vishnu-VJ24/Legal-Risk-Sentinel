@@ -15,6 +15,16 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <script>
+      (function () {
+        const redirect = window.location.search.match(/[?&]p=([^&]+)/);
+        if (!redirect) return;
+
+        const target = decodeURIComponent(redirect[1]).replace(/~and~/g, '&');
+        const nextUrl = window.location.origin + window.location.pathname.replace(/\/$/, '') + target + window.location.hash;
+        window.history.replaceState(null, '', nextUrl);
+      })();
+    </script>
   </head>
   <body class="bg-background">
     <div id="root"></div>

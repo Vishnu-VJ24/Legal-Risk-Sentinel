@@ -50,7 +50,7 @@ export const AnalyzePage = () => {
         <SectionHeading
           eyebrow="Analyze Contract"
           title="Upload once. Review every clause with context."
-          description="LexAI simulates a production-style contract intelligence pipeline, from parsing to explanation generation, with polished recruiter-demo UX."
+          description="LexAI simulates a production-style contract intelligence pipeline, from parsing to explanation generation, with a polished review workflow."
         />
         <FileDropzone
           disabled={isAnalyzing}

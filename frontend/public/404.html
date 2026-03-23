@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LexAI</title>
+    <script>
+      (function () {
+        var segmentCount = 1;
+        var locationPath = window.location.pathname.split('/').slice(1);
+        var repoBase = '/' + locationPath.slice(0, segmentCount).join('/');
+        var route = '/' + locationPath.slice(segmentCount).join('/');
+        var query = window.location.search ? window.location.search.replace(/^\?/, '&') : '';
+        var hash = window.location.hash || '';
+        var target = repoBase + '/?p=' + encodeURIComponent(route.replace(/&/g, '~and~')) + query + hash;
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body></body>
+  </html>

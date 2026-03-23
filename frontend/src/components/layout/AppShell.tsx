@@ -18,9 +18,6 @@ export const AppShell = () => {
       >
         <Outlet />
       </main>
-      <div className="pointer-events-none fixed bottom-5 left-4 z-40 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[11px] font-medium tracking-wide text-text-secondary backdrop-blur-md sm:bottom-7 sm:left-6">
-        Build: 9237fde
-      </div>
       <div className="pointer-events-none fixed bottom-5 right-4 z-40 sm:bottom-7 sm:right-6">
         <HeartFavorite className="pointer-events-auto" />
       </div>

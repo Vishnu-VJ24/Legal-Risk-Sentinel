@@ -34,12 +34,14 @@ export const Vortex = ({
 
     let frameId = 0;
     let tick = 0;
-    const particles = Array.from({ length: particleCount }, (_, index) => ({
-      angle: (index / particleCount) * Math.PI * 2,
-      radius: 20 + Math.random() * 420,
-      speed: 0.00085 + Math.random() * 0.0022,
-      size: 2.2 + Math.random() * 6.4,
-      offset: Math.random() * Math.PI * 2,
+    const particles = Array.from({ length: particleCount }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      driftX: (Math.random() - 0.5) * 0.0016,
+      driftY: (Math.random() - 0.5) * 0.0012,
+      size: 2.4 + Math.random() * 7.2,
+      pulse: Math.random() * Math.PI * 2,
+      swirl: Math.random() * Math.PI * 2,
     }));
 
     const resize = () => {
@@ -51,27 +53,27 @@ export const Vortex = ({
       tick += 1;
       const width = canvas.width;
       const height = canvas.height;
-      const centerX = width / 2;
-      const centerY = height / 2;
 
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, width, height);
 
       particles.forEach((particle, index) => {
-        const wobble = Math.sin(tick * 0.01 + particle.offset) * 34;
-        const radius = particle.radius + wobble;
-        const angle = particle.angle + tick * particle.speed;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle * 1.35) * radius * 0.42;
+        particle.x = (particle.x + particle.driftX + 1) % 1;
+        particle.y = (particle.y + particle.driftY + 1) % 1;
+
+        const swirlRadius = 18 + (index % 7) * 6;
+        const x = particle.x * width + Math.cos(tick * 0.01 + particle.swirl) * swirlRadius;
+        const y = particle.y * height + Math.sin(tick * 0.012 + particle.swirl) * swirlRadius;
         const hue =
           index % 6 === 0
             ? 148 + ((tick * 0.18 + index * 3) % 24)
             : baseHue + ((index * 11 + tick * 0.28) % 34);
-        const alpha = 0.42 + ((index % 5) * 0.08);
+        const alpha = 0.26 + ((index % 5) * 0.07);
+        const radius = particle.size + Math.sin(tick * 0.02 + particle.pulse) * 1.2;
 
         ctx.beginPath();
-        ctx.arc(x, y, particle.size, 0, Math.PI * 2);
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${hue}, 100%, 72%, ${alpha})`;
         ctx.shadowColor = `hsla(${hue}, 100%, 68%, 0.9)`;
         ctx.shadowBlur = 44;
