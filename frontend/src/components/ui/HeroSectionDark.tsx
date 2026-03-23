@@ -14,10 +14,6 @@ interface HeroSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   ctaHref?: string;
   secondaryText?: string;
   secondaryHref?: string;
-  bottomImage?: {
-    light: string;
-    dark: string;
-  };
   gridOptions?: {
     angle?: number;
     cellSize?: number;
@@ -73,12 +69,6 @@ export const HeroSectionDark = React.forwardRef<HTMLDivElement, HeroSectionProps
       ctaHref = '/analyze',
       secondaryText = 'View Repository',
       secondaryHref = 'https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel',
-      bottomImage = {
-        light:
-          'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80',
-        dark:
-          'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80',
-      },
       gridOptions,
       ...props
     },
@@ -88,17 +78,13 @@ export const HeroSectionDark = React.forwardRef<HTMLDivElement, HeroSectionProps
       <div
         ref={ref}
         {...props}
-        className={cn(
-          'relative overflow-hidden rounded-[36px] border border-border bg-surface/85 shadow-glow',
-          className,
-        )}
+        className={cn('relative overflow-hidden', className)}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(var(--color-primary)/0.22),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(var(--color-secondary)/0.15),transparent_28%)]" />
         <section className="relative z-10 mx-auto max-w-screen-xl">
           <RetroGrid {...gridOptions} />
-          <div className="px-6 py-16 sm:px-10 lg:px-12 lg:py-20">
+          <div className="px-6 py-20 sm:px-10 lg:px-12 lg:py-28">
             <div className="mx-auto max-w-4xl text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-5 py-2 text-sm font-medium text-text-secondary backdrop-blur">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/40 px-5 py-2 text-sm font-medium text-text-secondary backdrop-blur">
                 <span>{title}</span>
                 <ChevronRight className="h-4 w-4 text-primary transition-transform duration-300 group-hover:translate-x-1" />
               </div>
@@ -121,17 +107,6 @@ export const HeroSectionDark = React.forwardRef<HTMLDivElement, HeroSectionProps
                 </a>
               </div>
             </div>
-            {bottomImage ? (
-              <div className="relative z-10 mx-auto mt-16 max-w-5xl px-2 sm:px-4">
-                <div className="overflow-hidden rounded-[28px] border border-border bg-background/50 p-3 shadow-2xl backdrop-blur">
-                  <img
-                    src={bottomImage.dark}
-                    className="h-[240px] w-full rounded-[22px] object-cover sm:h-[420px]"
-                    alt="LexAI dashboard preview"
-                  />
-                </div>
-              </div>
-            ) : null}
           </div>
         </section>
       </div>

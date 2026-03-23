@@ -25,12 +25,12 @@ export const LandingPage = () => {
   return (
     <div className="relative flex flex-1 flex-col gap-16 overflow-hidden py-10">
       <Vortex
-        particleCount={140}
+        particleCount={180}
         baseHue={248}
-        containerClassName="pointer-events-none absolute inset-x-0 top-0 h-[100vh] opacity-75"
+        containerClassName="pointer-events-none absolute inset-x-0 top-0 h-[100vh] opacity-90"
         className="hidden"
       />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[100vh] bg-[radial-gradient(circle_at_top,rgba(var(--color-primary)/0.18),transparent_32%),radial-gradient(circle_at_80%_20%,rgba(var(--color-secondary)/0.12),transparent_24%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[100vh] bg-[radial-gradient(circle_at_top,rgba(var(--color-primary)/0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(var(--color-secondary)/0.1),transparent_24%)]" />
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
         <HeroSectionDark
           title="AI Contract Intelligence"
@@ -43,17 +43,11 @@ export const LandingPage = () => {
           ctaHref="/analyze"
           secondaryText="View Repository"
           secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
-          bottomImage={{
-            light:
-              'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
-            dark:
-              'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80',
-          }}
           gridOptions={{
             angle: 64,
-            opacity: 0.42,
-            cellSize: 54,
-            lineColor: 'rgba(139, 139, 167, 0.18)',
+            opacity: 0.18,
+            cellSize: 58,
+            lineColor: 'rgba(139, 139, 167, 0.1)',
           }}
         />
       </motion.div>
@@ -65,7 +59,7 @@ export const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
-            className="rounded-3xl border border-border bg-surface/70 p-6"
+            className="rounded-3xl border border-border bg-surface/55 p-6 backdrop-blur"
           >
             <feature.icon className="h-10 w-10 text-primary" />
             <h2 className="mt-5 text-xl font-semibold">{feature.title}</h2>
@@ -73,7 +67,7 @@ export const LandingPage = () => {
           </motion.article>
         ))}
       </section>
-      <footer className="relative z-10 rounded-[28px] border border-border bg-surface/70 px-6 py-6">
+      <footer className="relative z-10 rounded-[28px] border border-border bg-surface/55 px-6 py-6 backdrop-blur">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-text-secondary">
             Built with React, TypeScript, FastAPI, Tailwind CSS, TanStack Query, and production-minded AI app patterns.
