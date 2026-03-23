@@ -36,9 +36,14 @@ export default {
           '0%': { boxShadow: '0 0 0 0 rgba(108,99,255,0.4)' },
           '100%': { boxShadow: '0 0 0 16px rgba(108,99,255,0)' },
         },
+        grid: {
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '100%': { transform: 'translate3d(-6%, -8%, 0)' },
+        },
       },
       animation: {
         pulseRing: 'pulseRing 1.2s ease-out',
+        grid: 'grid 18s linear infinite',
       },
     },
   },

@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, BrainCircuit, FileSearch, ShieldAlert } from 'lucide-react';
-import { SectionHeading } from '../components/common/SectionHeading';
+import { BrainCircuit, FileSearch, ShieldAlert } from 'lucide-react';
+import { HeroSectionDark } from '../components/ui/HeroSectionDark';
 
 const features = [
   {
@@ -24,30 +23,26 @@ const features = [
 export const LandingPage = () => {
   return (
     <div className="flex flex-1 flex-col gap-16 py-10">
-      <section className="rounded-[32px] border border-border bg-surface/80 px-6 py-14 shadow-glow sm:px-10">
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl">
-          <SectionHeading
-            eyebrow="AI Contract Intelligence"
-            title="Understand Every Clause. Before You Sign."
-            description="LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review feels fast, structured, and recruiter-demo ready."
-          />
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link
-              to="/analyze"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:scale-[1.02]"
-            >
-              Start Analysis
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="https://github.com/"
-              className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-text-primary transition hover:border-primary/40"
-            >
-              View Repository
-            </a>
-          </div>
-        </motion.div>
-      </section>
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
+        <HeroSectionDark
+          title="AI Contract Intelligence"
+          subtitle={{
+            regular: 'Understand Every Clause. ',
+            gradient: 'Before You Sign.',
+          }}
+          description="LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review feels fast, structured, and recruiter-demo ready."
+          ctaText="Start Analysis"
+          ctaHref="/analyze"
+          secondaryText="View Repository"
+          secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
+          gridOptions={{
+            angle: 64,
+            opacity: 0.42,
+            cellSize: 54,
+            lineColor: 'rgba(139, 139, 167, 0.18)',
+          }}
+        />
+      </motion.div>
 
       <section className="grid gap-6 md:grid-cols-3">
         {features.map((feature, index) => (
