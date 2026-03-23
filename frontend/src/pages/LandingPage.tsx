@@ -25,12 +25,13 @@ export const LandingPage = () => {
   return (
     <div className="relative flex flex-1 flex-col gap-16 overflow-hidden py-10">
       <Vortex
-        particleCount={180}
+        particleCount={220}
         baseHue={248}
-        containerClassName="pointer-events-none absolute inset-x-0 top-0 h-[100vh] opacity-90"
+        containerClassName="pointer-events-none absolute inset-0 min-h-[140vh] opacity-100"
         className="hidden"
       />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[100vh] bg-[radial-gradient(circle_at_top,rgba(var(--color-primary)/0.14),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(var(--color-secondary)/0.1),transparent_24%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(var(--color-primary)/0.24),transparent_26%),radial-gradient(circle_at_78%_20%,rgba(var(--color-secondary)/0.18),transparent_24%),radial-gradient(circle_at_22%_24%,rgba(var(--color-primary)/0.12),transparent_18%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,15,0.25)_0%,rgba(10,10,15,0.45)_38%,rgba(10,10,15,0.72)_70%,rgba(10,10,15,0.92)_100%)]" />
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
         <HeroSectionDark
           title="AI Contract Intelligence"
@@ -45,9 +46,9 @@ export const LandingPage = () => {
           secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
           gridOptions={{
             angle: 64,
-            opacity: 0.18,
-            cellSize: 58,
-            lineColor: 'rgba(139, 139, 167, 0.1)',
+            opacity: 0.12,
+            cellSize: 64,
+            lineColor: 'rgba(139, 139, 167, 0.08)',
           }}
         />
       </motion.div>
@@ -59,7 +60,7 @@ export const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
-            className="rounded-3xl border border-border bg-surface/55 p-6 backdrop-blur"
+            className="rounded-3xl border border-border bg-surface/45 p-6 backdrop-blur-md"
           >
             <feature.icon className="h-10 w-10 text-primary" />
             <h2 className="mt-5 text-xl font-semibold">{feature.title}</h2>
@@ -67,7 +68,7 @@ export const LandingPage = () => {
           </motion.article>
         ))}
       </section>
-      <footer className="relative z-10 rounded-[28px] border border-border bg-surface/55 px-6 py-6 backdrop-blur">
+      <footer className="relative z-10 rounded-[28px] border border-border bg-surface/45 px-6 py-6 backdrop-blur-md">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-text-secondary">
             Built with React, TypeScript, FastAPI, Tailwind CSS, TanStack Query, and production-minded AI app patterns.

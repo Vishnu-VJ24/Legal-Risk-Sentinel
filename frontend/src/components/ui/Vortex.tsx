@@ -15,7 +15,7 @@ export const Vortex = ({
   children,
   className,
   containerClassName,
-  particleCount = 90,
+  particleCount = 140,
   backgroundColor = 'transparent',
   baseHue = 250,
 }: VortexProps & HTMLAttributes<HTMLDivElement>) => {
@@ -36,9 +36,9 @@ export const Vortex = ({
     let tick = 0;
     const particles = Array.from({ length: particleCount }, (_, index) => ({
       angle: (index / particleCount) * Math.PI * 2,
-      radius: 40 + Math.random() * 220,
-      speed: 0.002 + Math.random() * 0.006,
-      size: 0.8 + Math.random() * 2.4,
+      radius: 80 + Math.random() * 420,
+      speed: 0.0015 + Math.random() * 0.004,
+      size: 1.2 + Math.random() * 3.8,
       offset: Math.random() * Math.PI * 2,
     }));
 
@@ -63,14 +63,14 @@ export const Vortex = ({
         const radius = particle.radius + wobble;
         const angle = particle.angle + tick * particle.speed;
         const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle * 1.6) * radius * 0.35;
+        const y = centerY + Math.sin(angle * 1.35) * radius * 0.42;
         const hue = baseHue + ((index * 7 + tick * 0.4) % 70);
 
         ctx.beginPath();
         ctx.arc(x, y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${hue}, 100%, 68%, 0.7)`;
-        ctx.shadowColor = `hsla(${hue}, 100%, 68%, 0.55)`;
-        ctx.shadowBlur = 16;
+        ctx.fillStyle = `hsla(${hue}, 100%, 70%, 0.9)`;
+        ctx.shadowColor = `hsla(${hue}, 100%, 70%, 0.85)`;
+        ctx.shadowBlur = 26;
         ctx.fill();
       });
 
@@ -89,7 +89,11 @@ export const Vortex = ({
 
   return (
     <div className={cn('relative h-full w-full overflow-hidden', containerClassName)}>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-0">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 z-0 mix-blend-screen"
+      >
         <canvas ref={canvasRef} className="h-full w-full" />
       </motion.div>
       <div className={cn('relative z-10', className)}>{children}</div>
