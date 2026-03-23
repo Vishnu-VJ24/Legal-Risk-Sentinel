@@ -10,8 +10,8 @@ interface HeartFavoriteProps {
 }
 
 export const HeartFavorite = ({
-  href = 'https://github.com/Vishnu-VJ24',
-  label = 'Follow Vishnu on GitHub',
+  href = 'https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel',
+  label = 'Follow & Star the Repo',
   className,
 }: HeartFavoriteProps) => {
   const [isLiked, setIsLiked] = useState(false);

@@ -36,9 +36,9 @@ export const Vortex = ({
     let tick = 0;
     const particles = Array.from({ length: particleCount }, (_, index) => ({
       angle: (index / particleCount) * Math.PI * 2,
-      radius: 60 + Math.random() * 500,
-      speed: 0.001 + Math.random() * 0.0025,
-      size: 1.8 + Math.random() * 5.2,
+      radius: 20 + Math.random() * 420,
+      speed: 0.00085 + Math.random() * 0.0022,
+      size: 2.2 + Math.random() * 6.4,
       offset: Math.random() * Math.PI * 2,
     }));
 
@@ -59,19 +59,22 @@ export const Vortex = ({
       ctx.fillRect(0, 0, width, height);
 
       particles.forEach((particle, index) => {
-        const wobble = Math.sin(tick * 0.01 + particle.offset) * 30;
+        const wobble = Math.sin(tick * 0.01 + particle.offset) * 34;
         const radius = particle.radius + wobble;
         const angle = particle.angle + tick * particle.speed;
         const x = centerX + Math.cos(angle) * radius;
         const y = centerY + Math.sin(angle * 1.35) * radius * 0.42;
-        const hue = baseHue + ((index * 11 + tick * 0.28) % 34);
+        const hue =
+          index % 6 === 0
+            ? 148 + ((tick * 0.18 + index * 3) % 24)
+            : baseHue + ((index * 11 + tick * 0.28) % 34);
         const alpha = 0.42 + ((index % 5) * 0.08);
 
         ctx.beginPath();
         ctx.arc(x, y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = `hsla(${hue}, 100%, 72%, ${alpha})`;
         ctx.shadowColor = `hsla(${hue}, 100%, 68%, 0.9)`;
-        ctx.shadowBlur = 38;
+        ctx.shadowBlur = 44;
         ctx.fill();
       });
 

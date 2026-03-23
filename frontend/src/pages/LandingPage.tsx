@@ -43,7 +43,7 @@ export const LandingPage = () => {
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-text-secondary sm:text-lg">
               LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review
-              feels fast, structured, and recruiter-demo ready.
+              feels fast and structured.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <ButtonWithIcon href="/analyze" label="Start Analysis" />
