@@ -24,31 +24,29 @@ const features = [
 export const LandingPage = () => {
   return (
     <div className="relative flex flex-1 flex-col gap-16 overflow-hidden py-10">
-      <Vortex
-        particleCount={260}
-        baseHue={248}
-        containerClassName="pointer-events-none absolute inset-0 min-h-[140vh] opacity-100"
-        className="hidden"
-      />
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
-        <HeroSectionDark
-          title="AI Contract Intelligence"
-          subtitle={{
-            regular: 'Understand Every Clause. ',
-            gradient: 'Before You Sign.',
-          }}
-          description="LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review feels fast, structured, and recruiter-demo ready."
-          ctaText="Start Analysis"
-          ctaHref="/analyze"
-          secondaryText="View Repository"
-          secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
-          gridOptions={{
-            angle: 64,
-            opacity: 0.08,
-            cellSize: 68,
-            lineColor: 'rgba(139, 139, 167, 0.05)',
-          }}
-        />
+        <section className="relative overflow-hidden rounded-[40px] border border-white/8 bg-[#090910]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(191,90,242,0.24),transparent_32%),radial-gradient(circle_at_75%_25%,rgba(236,72,153,0.16),transparent_28%)]" />
+          <Vortex
+            particleCount={320}
+            baseHue={304}
+            containerClassName="absolute inset-0"
+            className="min-h-[520px] sm:min-h-[600px]"
+          >
+            <HeroSectionDark
+              title="AI Contract Intelligence"
+              subtitle={{
+                regular: 'Understand Every Clause. ',
+                gradient: 'Before You Sign.',
+              }}
+              description="LexAI combines document parsing, clause extraction, risk scoring, and explainable AI so legal review feels fast, structured, and recruiter-demo ready."
+              ctaText="Start Analysis"
+              ctaHref="/analyze"
+              secondaryText="View Repository"
+              secondaryHref="https://github.com/Vishnu-VJ24/Legal-Risk-Sentinel"
+            />
+          </Vortex>
+        </section>
       </motion.div>
 
       <section className="relative z-10 grid gap-6 md:grid-cols-3">
