@@ -8,14 +8,18 @@ const initialState: FilterState = {
   clauseType: 'all',
 };
 
-export const useClauseFilter = (clauses: ClauseResult[]) => {
+export const useClauseFilter = (clauses?: ClauseResult[]) => {
   const [filters, setFilters] = useState<FilterState>(initialState);
+  const safeClauses = useMemo(() => clauses ?? [], [clauses]);
 
-  const clauseTypes = useMemo(() => Array.from(new Set(clauses.map((clause) => clause.type))), [clauses]);
+  const clauseTypes = useMemo(
+    () => Array.from(new Set(safeClauses.map((clause) => clause.type))),
+    [safeClauses],
+  );
 
   const filteredClauses = useMemo(
     () =>
-      clauses.filter((clause) => {
+      safeClauses.filter((clause) => {
         const search = filters.search.trim().toLowerCase();
         const matchesSearch =
           search.length === 0 ||
@@ -26,7 +30,7 @@ export const useClauseFilter = (clauses: ClauseResult[]) => {
         const matchesType = filters.clauseType === 'all' || clause.type === filters.clauseType;
         return matchesSearch && matchesRisk && matchesType;
       }),
-    [clauses, filters],
+    [filters, safeClauses],
   );
 
   return { clauseTypes, filteredClauses, filters, setFilters };
