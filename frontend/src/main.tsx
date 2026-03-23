@@ -7,6 +7,8 @@ import { ThemeProvider } from './components/theme/ThemeProvider';
 import { router } from './router';
 import './styles/index.css';
 
+console.log('[LexAI] VITE_API_BASE_URL', import.meta.env.VITE_API_BASE_URL);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>

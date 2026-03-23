@@ -33,10 +33,14 @@ export const useAnalyzePipeline = () => {
       }
     },
     onSuccess: (data, uploadFile) => {
+      console.log('[LexAI] analyze mutation success', data);
       setSessionId(data.session_id);
       setFile(uploadFile);
       setProgress(data.progress_pct);
       setStage(data.pipeline_stage);
+    },
+    onError: (error) => {
+      console.error('[LexAI] analyze mutation error', error);
     },
   });
 
@@ -48,8 +52,16 @@ export const useAnalyzePipeline = () => {
   });
 
   useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+    console.log('[LexAI] session_id stored, polling enabled', { sessionId });
+  }, [sessionId]);
+
+  useEffect(() => {
     if (!sessionId || resultsQuery.data) {
       if (resultsQuery.data) {
+        console.log('[LexAI] results received, stopping polling', resultsQuery.data);
         setProgress(100);
         setStage('done');
       }
@@ -67,6 +79,13 @@ export const useAnalyzePipeline = () => {
 
     return () => window.clearInterval(timer);
   }, [resultsQuery.data, sessionId]);
+
+  useEffect(() => {
+    if (!resultsQuery.error) {
+      return;
+    }
+    console.error('[LexAI] results query error', resultsQuery.error);
+  }, [resultsQuery.error]);
 
   const reset = useCallback(() => {
     setSessionId(null);
