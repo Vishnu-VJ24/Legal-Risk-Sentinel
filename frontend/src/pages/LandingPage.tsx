@@ -26,13 +26,13 @@ export const LandingPage = () => {
     <div className="relative flex flex-1 flex-col gap-16 overflow-hidden py-10">
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
         <section className="relative overflow-hidden rounded-[40px] border border-white/8 bg-[#090910]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(191,90,242,0.24),transparent_32%),radial-gradient(circle_at_75%_25%,rgba(236,72,153,0.16),transparent_28%)]" />
           <Vortex
             particleCount={320}
             baseHue={304}
-            containerClassName="absolute inset-0"
-            className="min-h-[520px] sm:min-h-[600px]"
+            containerClassName="relative min-h-[520px] sm:min-h-[600px]"
+            className="flex min-h-[520px] items-center sm:min-h-[600px]"
           >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(191,90,242,0.24),transparent_32%),radial-gradient(circle_at_75%_25%,rgba(236,72,153,0.16),transparent_28%)]" />
             <HeroSectionDark
               title="AI Contract Intelligence"
               subtitle={{
