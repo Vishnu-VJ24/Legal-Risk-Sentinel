@@ -23,9 +23,12 @@ FastAPI backend for LexAI / Legal Risk Sentinel with a quality-first dynamic pip
 ## Key Environment Variables
 
 - `HF_TOKEN`
-- `HF_RISK_MODEL_ID` default: `VJ24/llama-risk-tagger-merged`
 - `HF_EXTRACTOR_MODEL_ID`
 - `HF_EXPLAINER_MODEL_ID`
+- `CF_ACCOUNT_ID`
+- `CF_API_TOKEN`
+- `CF_RISK_BASE_MODEL` default: `@cf/meta/llama-3.1-8b-instruct`
+- `CF_RISK_LORA_NAME`
 - `LANGCHAIN_TRACING_V2=true`
 - `LANGSMITH_API_KEY`
 - `LANGSMITH_PROJECT`
@@ -33,5 +36,5 @@ FastAPI backend for LexAI / Legal Risk Sentinel with a quality-first dynamic pip
 ## Notes
 
 - The frontend API contract remains unchanged.
-- The backend now supports dynamic clause extraction, scoring, and explanation assembly.
+- The backend now supports dynamic clause extraction, Cloudflare LoRA-backed scoring, and explanation assembly.
 - If model inference is unavailable in hybrid mode, the service returns the existing mock-style output for demo reliability.

@@ -166,10 +166,11 @@ async def run_analysis_pipeline(session_id: str, filename: str, file_bytes: byte
     settings = get_settings()
     started = perf_counter()
     logger.info(
-        "session=%s pipeline_start mode=%s risk_model=%s extractor_model=%s explainer_model=%s",
+        "session=%s pipeline_start mode=%s scorer_base_model=%s scorer_lora=%s extractor_model=%s explainer_model=%s",
         session_id,
         settings.pipeline_mode,
-        settings.hf_risk_model_id,
+        settings.cf_risk_base_model,
+        settings.cf_risk_lora_name,
         settings.hf_extractor_model_id,
         settings.hf_explainer_model_id,
     )

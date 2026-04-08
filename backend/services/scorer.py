@@ -7,6 +7,7 @@ from typing import Any
 from config import Settings
 from models.pipeline_state import ExtractedClauseCandidate, PipelineState, ScoredClauseCandidate
 from models.schemas import RiskLevel
+from services.cloudflare_inference import CloudflareLoraScorer
 from services.inference import HuggingFaceTextGenerator
 
 logger = logging.getLogger(__name__)
@@ -134,19 +135,27 @@ def _normalize_score_payload(payload: dict[str, Any], clause: ExtractedClauseCan
 
 async def score_clauses(state: PipelineState, settings: Settings) -> PipelineState:
     generator = HuggingFaceTextGenerator(settings)
+    cloudflare_scorer = CloudflareLoraScorer(settings)
     scored: list[ScoredClauseCandidate] = []
 
-    if generator.available and settings.pipeline_mode != "mock":
+    if cloudflare_scorer.available and settings.pipeline_mode != "mock":
         logger.info(
-            "session=%s stage=scoring path=model model_id=%s clauses=%s",
+            "session=%s stage=scoring path=cloudflare_lora base_model=%s lora=%s clauses=%s",
             state.session_id,
-            settings.hf_risk_model_id,
+            settings.cf_risk_base_model,
+            settings.cf_risk_lora_name,
+            len(state.extracted_clauses),
+        )
+    elif settings.pipeline_mode != "mock":
+        logger.info(
+            "session=%s stage=scoring path=heuristic_only reason=cloudflare_not_configured clauses=%s",
+            state.session_id,
             len(state.extracted_clauses),
         )
 
     for clause in state.extracted_clauses:
         payload: dict[str, Any] | None = None
-        if generator.available and settings.pipeline_mode != "mock":
+        if cloudflare_scorer.available and settings.pipeline_mode != "mock":
             prompt = (
                 "You are a legal contract risk scoring model. "
                 "Return only JSON with keys: clause_category, risk_severity, is_unfair, risk_factors, rationale. "
@@ -154,19 +163,19 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
                 f"Clause text:\n{clause.raw_text}"
             )
             try:
-                payload = generator.generate_json(
-                    model_id=settings.hf_risk_model_id,
+                payload = cloudflare_scorer.generate_json(
                     prompt=prompt,
-                    max_new_tokens=500,
+                    max_tokens=500,
                     temperature=0.05,
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
                 logger.warning(
-                    "session=%s stage=scoring path=model_failed clause=%s model_id=%s error=%s",
+                    "session=%s stage=scoring path=cloudflare_failed clause=%s base_model=%s lora=%s error=%s",
                     state.session_id,
                     clause.clause_id,
-                    settings.hf_risk_model_id,
+                    settings.cf_risk_base_model,
+                    settings.cf_risk_lora_name,
                     exc,
                 )
 
