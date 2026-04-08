@@ -7,9 +7,6 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from config import Settings
-from services.inference import extract_json_object
-
-
 class CloudflareLoraScorer:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -23,13 +20,13 @@ class CloudflareLoraScorer:
             and self.settings.cf_risk_base_model
         )
 
-    def generate_json(
+    def generate_text(
         self,
         *,
         prompt: str,
         max_tokens: int = 400,
         temperature: float = 0.05,
-    ) -> tuple[dict[str, Any], float, dict[str, int], str]:
+    ) -> tuple[str, float, dict[str, int]]:
         if not self.available:
             raise RuntimeError("Cloudflare LoRA scorer is not configured.")
 
@@ -77,12 +74,12 @@ class CloudflareLoraScorer:
         if isinstance(result, dict):
             if isinstance(result.get("response"), str):
                 raw_text = result["response"]
-                return extract_json_object(raw_text), time.perf_counter() - started, normalized_usage, raw_text
+                return raw_text, time.perf_counter() - started, normalized_usage
             if isinstance(result.get("result"), str):
                 raw_text = result["result"]
-                return extract_json_object(raw_text), time.perf_counter() - started, normalized_usage, raw_text
+                return raw_text, time.perf_counter() - started, normalized_usage
             raw_text = json.dumps(result)
-            return result, time.perf_counter() - started, normalized_usage, raw_text
+            return raw_text, time.perf_counter() - started, normalized_usage
         if isinstance(result, str):
-            return extract_json_object(result), time.perf_counter() - started, normalized_usage, result
-        raise RuntimeError("Cloudflare scorer response did not contain a parseable result.")
+            return result, time.perf_counter() - started, normalized_usage
+        raise RuntimeError("Cloudflare scorer response did not contain a usable text result.")

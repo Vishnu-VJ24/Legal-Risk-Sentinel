@@ -57,3 +57,23 @@ class HuggingFaceTextGenerator:
             return_full_text=False,
         )
         return extract_json_object(str(response))
+
+    def generate_text(
+        self,
+        *,
+        model_id: str,
+        prompt: str,
+        max_new_tokens: int = 512,
+        temperature: float = 0.1,
+    ) -> str:
+        if not self.available or self._client is None:
+            raise RuntimeError("Hugging Face inference client is not configured.")
+
+        response = self._client.text_generation(
+            prompt,
+            model=model_id,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            return_full_text=False,
+        )
+        return str(response)

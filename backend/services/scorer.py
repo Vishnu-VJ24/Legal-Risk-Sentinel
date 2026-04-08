@@ -10,6 +10,7 @@ from config import Settings
 from models.pipeline_state import ExtractedClauseCandidate, PipelineState, ScoredClauseCandidate
 from models.schemas import RiskLevel
 from services.cloudflare_inference import CloudflareLoraScorer
+from services.inference import HuggingFaceTextGenerator, extract_json_object
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +135,35 @@ def _normalize_score_payload(payload: dict[str, Any], clause: ExtractedClauseCan
     )
 
 
+async def _repair_cloudflare_output(
+    raw_text: str,
+    clause: ExtractedClauseCandidate,
+    settings: Settings,
+) -> dict[str, Any]:
+    generator = HuggingFaceTextGenerator(settings)
+    if not generator.available:
+        raise ValueError("Repair model unavailable.")
+
+    repair_prompt = (
+        "You convert noisy model output into a strict JSON object.\n"
+        "Return only one valid JSON object. Do not include markdown or extra text.\n"
+        'Use exactly these keys: "clause_category", "risk_severity", "is_unfair", "risk_factors", "rationale".\n'
+        "risk_severity must be an integer from 1 to 5.\n\n"
+        f"Original clause text:\n{clause.raw_text}\n\n"
+        f"Detected category hint: {clause.predicted_category}\n\n"
+        "Model output to normalize:\n"
+        f"{raw_text}"
+    )
+    repaired = await asyncio.to_thread(
+        generator.generate_text,
+        model_id=settings.hf_extractor_model_id,
+        prompt=repair_prompt,
+        max_new_tokens=260,
+        temperature=0.0,
+    )
+    return extract_json_object(repaired)
+
+
 async def score_clauses(state: PipelineState, settings: Settings) -> PipelineState:
     cloudflare_scorer = CloudflareLoraScorer(settings)
     scored: list[ScoredClauseCandidate] = []
@@ -161,6 +191,7 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
         use_remote: bool,
     ) -> ScoredClauseCandidate:
         payload: dict[str, Any] | None = None
+        raw_text = ""
         if use_remote and cloudflare_scorer.available and settings.pipeline_mode != "mock":
             prompt = (
                 "You are a legal contract risk scoring model.\n"
@@ -172,12 +203,13 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
             )
             try:
                 async with semaphore:
-                    payload, duration, usage, raw_text = await asyncio.to_thread(
-                        cloudflare_scorer.generate_json,
+                    raw_text, duration, usage = await asyncio.to_thread(
+                        cloudflare_scorer.generate_text,
                         prompt=prompt,
                         max_tokens=180,
                         temperature=0.02,
                     )
+                payload = extract_json_object(raw_text)
                 logger.info(
                     "session=%s stage=scoring path=cloudflare_success clause=%s duration=%.2fs total_tokens=%s",
                     state.session_id,
@@ -186,19 +218,34 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
                     usage.get("total_tokens", 0),
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
-                snippet = ""
-                if "raw_text" in locals() and isinstance(raw_text, str):
-                    snippet = raw_text[:220].replace("\n", " ")
-                state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
                 logger.warning(
-                    "session=%s stage=scoring path=cloudflare_failed clause=%s base_model=%s lora=%s error=%s raw_snippet=%s",
+                    "session=%s stage=scoring path=cloudflare_parse_failed clause=%s base_model=%s lora=%s error=%s raw_snippet=%s",
                     state.session_id,
                     clause.clause_id,
                     settings.cf_risk_base_model,
                     settings.cf_risk_lora_name,
                     exc,
-                    snippet,
+                    raw_text[:220].replace("\n", " ") if isinstance(raw_text, str) else "",
                 )
+                try:
+                    payload = await _repair_cloudflare_output(raw_text, clause, settings)
+                    logger.info(
+                        "session=%s stage=scoring path=repair_success clause=%s",
+                        state.session_id,
+                        clause.clause_id,
+                    )
+                except Exception as repair_exc:  # pragma: no cover - depends on remote model
+                    state.add_diagnostic(
+                        "scoring",
+                        f"Scorer model failed for {clause.clause_id}: {exc}; repair failed: {repair_exc}",
+                        used_fallback=True,
+                    )
+                    logger.warning(
+                        "session=%s stage=scoring path=repair_failed clause=%s error=%s",
+                        state.session_id,
+                        clause.clause_id,
+                        repair_exc,
+                    )
 
         if payload is None:
             payload = _heuristic_score_clause(clause)
