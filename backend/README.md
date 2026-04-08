@@ -27,8 +27,8 @@ FastAPI backend for LexAI / Legal Risk Sentinel with a quality-first dynamic pip
 - `HF_EXPLAINER_MODEL_ID`
 - `CF_ACCOUNT_ID`
 - `CF_API_TOKEN`
-- `CF_RISK_BASE_MODEL` default: `@cf/meta/llama-3.1-8b-instruct`
-- `CF_RISK_LORA_NAME`
+- `CF_RISK_BASE_MODEL` default: `@cf/mistral/mistral-7b-instruct-v0.2-lora`
+- `CF_RISK_LORA_NAME` should be set to your immutable Cloudflare fine-tune ID, for example `bd08f996-1fa9-4c11-a512-c040ef90645f`
 - `LANGCHAIN_TRACING_V2=true`
 - `LANGSMITH_API_KEY`
 - `LANGSMITH_PROJECT`
@@ -38,3 +38,4 @@ FastAPI backend for LexAI / Legal Risk Sentinel with a quality-first dynamic pip
 - The frontend API contract remains unchanged.
 - The backend now supports dynamic clause extraction, Cloudflare LoRA-backed scoring, and explanation assembly.
 - If model inference is unavailable in hybrid mode, the service returns the existing mock-style output for demo reliability.
+- To stay within Cloudflare's free Workers AI usage, the scorer uses a low-temperature, low-max-token JSON-only prompt and should only be invoked for clause-level scoring.

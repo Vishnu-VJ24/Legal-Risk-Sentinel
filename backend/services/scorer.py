@@ -8,7 +8,6 @@ from config import Settings
 from models.pipeline_state import ExtractedClauseCandidate, PipelineState, ScoredClauseCandidate
 from models.schemas import RiskLevel
 from services.cloudflare_inference import CloudflareLoraScorer
-from services.inference import HuggingFaceTextGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +133,6 @@ def _normalize_score_payload(payload: dict[str, Any], clause: ExtractedClauseCan
 
 
 async def score_clauses(state: PipelineState, settings: Settings) -> PipelineState:
-    generator = HuggingFaceTextGenerator(settings)
     cloudflare_scorer = CloudflareLoraScorer(settings)
     scored: list[ScoredClauseCandidate] = []
 
@@ -165,8 +163,8 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
             try:
                 payload = cloudflare_scorer.generate_json(
                     prompt=prompt,
-                    max_tokens=500,
-                    temperature=0.05,
+                    max_tokens=220,
+                    temperature=0.02,
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
