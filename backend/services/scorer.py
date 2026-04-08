@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from statistics import fmean
 from typing import Any
 
@@ -7,6 +8,8 @@ from config import Settings
 from models.pipeline_state import ExtractedClauseCandidate, PipelineState, ScoredClauseCandidate
 from models.schemas import RiskLevel
 from services.inference import HuggingFaceTextGenerator
+
+logger = logging.getLogger(__name__)
 
 
 def map_severity_to_score(severity: int) -> float:
@@ -133,6 +136,14 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
     generator = HuggingFaceTextGenerator(settings)
     scored: list[ScoredClauseCandidate] = []
 
+    if generator.available and settings.pipeline_mode != "mock":
+        logger.info(
+            "session=%s stage=scoring path=model model_id=%s clauses=%s",
+            state.session_id,
+            settings.hf_risk_model_id,
+            len(state.extracted_clauses),
+        )
+
     for clause in state.extracted_clauses:
         payload: dict[str, Any] | None = None
         if generator.available and settings.pipeline_mode != "mock":
@@ -151,10 +162,22 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
+                logger.warning(
+                    "session=%s stage=scoring path=model_failed clause=%s model_id=%s error=%s",
+                    state.session_id,
+                    clause.clause_id,
+                    settings.hf_risk_model_id,
+                    exc,
+                )
 
         if payload is None:
             payload = _heuristic_score_clause(clause)
             state.add_diagnostic("scoring", f"Used heuristic scoring for {clause.clause_id}.", used_fallback=True)
+            logger.info(
+                "session=%s stage=scoring path=heuristic clause=%s",
+                state.session_id,
+                clause.clause_id,
+            )
 
         scored.append(_normalize_score_payload(payload, clause))
 
@@ -162,4 +185,10 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
         raise ValueError("Scoring did not return a result for every extracted clause.")
 
     state.scored_clauses = scored
+    logger.info(
+        "session=%s stage=scoring completed overall_score=%s clauses=%s",
+        state.session_id,
+        build_overall_score(state.scored_clauses),
+        len(state.scored_clauses),
+    )
     return state

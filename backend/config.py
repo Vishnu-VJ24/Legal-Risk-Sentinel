@@ -11,7 +11,7 @@ PipelineMode = Literal["mock", "real", "hybrid"]
 class Settings(BaseModel):
     pipeline_mode: PipelineMode = "hybrid"
     hf_token: str | None = None
-    hf_risk_model_id: str = "VJ24/llama-risk-tagger-lora"
+    hf_risk_model_id: str = "VJ24/llama-risk-tagger-merged"
     hf_extractor_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
     hf_explainer_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
     langsmith_api_key: str | None = None
@@ -30,7 +30,7 @@ def get_settings() -> Settings:
     return Settings(
         pipeline_mode=mode,
         hf_token=getenv("HF_TOKEN"),
-        hf_risk_model_id=getenv("HF_RISK_MODEL_ID", "VJ24/llama-risk-tagger-lora"),
+        hf_risk_model_id=getenv("HF_RISK_MODEL_ID", "VJ24/llama-risk-tagger-merged"),
         hf_extractor_model_id=getenv("HF_EXTRACTOR_MODEL_ID", "Qwen/Qwen2.5-3B-Instruct"),
         hf_explainer_model_id=getenv("HF_EXPLAINER_MODEL_ID", "Qwen/Qwen2.5-3B-Instruct"),
         langsmith_api_key=getenv("LANGSMITH_API_KEY"),

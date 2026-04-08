@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping
+import logging
 from time import perf_counter
 from typing import Any, Callable
 
@@ -19,6 +20,8 @@ try:
 except ImportError:  # pragma: no cover - installed in deployment
     END = "__end__"
     StateGraph = None  # type: ignore[assignment]
+
+logger = logging.getLogger(__name__)
 
 
 def _traceable(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
@@ -162,11 +165,20 @@ def _build_graph(
 async def run_analysis_pipeline(session_id: str, filename: str, file_bytes: bytes) -> ResultsResponse:
     settings = get_settings()
     started = perf_counter()
+    logger.info(
+        "session=%s pipeline_start mode=%s risk_model=%s extractor_model=%s explainer_model=%s",
+        session_id,
+        settings.pipeline_mode,
+        settings.hf_risk_model_id,
+        settings.hf_extractor_model_id,
+        settings.hf_explainer_model_id,
+    )
 
     if settings.pipeline_mode == "mock":
         parsed = await parse_document_content(file_bytes, filename)
         results = build_mock_results(session_id, str(parsed["document_name"]), int(parsed["page_count"]))
         results.processing_time_seconds = round(perf_counter() - started, 1)
+        logger.info("session=%s pipeline_complete path=mock duration=%.2fs", session_id, results.processing_time_seconds)
         return results
 
     state = PipelineState(session_id=session_id, filename=filename)
@@ -178,8 +190,16 @@ async def run_analysis_pipeline(session_id: str, filename: str, file_bytes: byte
         else:
             state = _coerce_pipeline_state(await _run_pipeline_sequential(state, settings, file_bytes))
         results = _assemble_results(state)
+        logger.info(
+            "session=%s pipeline_complete path=dynamic duration=%.2fs clauses=%s overall_score=%s",
+            session_id,
+            round(perf_counter() - started, 1),
+            len(results.clauses),
+            results.overall_risk_score,
+        )
     except Exception as exc:
         if settings.pipeline_mode == "real":
+            logger.exception("session=%s pipeline_failed mode=real error=%s", session_id, exc)
             raise
 
         fallback_name = state.document_name or filename
@@ -187,6 +207,11 @@ async def run_analysis_pipeline(session_id: str, filename: str, file_bytes: byte
         results = build_mock_results(session_id, fallback_name, fallback_page_count)
         results.document_name = fallback_name
         state.add_diagnostic("fallback_if_needed", f"Fell back to mock pipeline: {exc}", used_fallback=True)
+        logger.warning(
+            "session=%s pipeline_fallback path=mock error=%s",
+            session_id,
+            exc,
+        )
 
     results.processing_time_seconds = round(perf_counter() - started, 1)
     return results

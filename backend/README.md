@@ -23,7 +23,7 @@ FastAPI backend for LexAI / Legal Risk Sentinel with a quality-first dynamic pip
 ## Key Environment Variables
 
 - `HF_TOKEN`
-- `HF_RISK_MODEL_ID` default: `VJ24/llama-risk-tagger-lora`
+- `HF_RISK_MODEL_ID` default: `VJ24/llama-risk-tagger-merged`
 - `HF_EXTRACTOR_MODEL_ID`
 - `HF_EXPLAINER_MODEL_ID`
 - `LANGCHAIN_TRACING_V2=true`

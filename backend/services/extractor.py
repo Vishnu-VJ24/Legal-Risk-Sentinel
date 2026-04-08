@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from collections import OrderedDict
 
@@ -23,6 +24,8 @@ CATEGORY_KEYWORDS: "OrderedDict[str, tuple[str, ...]]" = OrderedDict(
         "Audit Rights": ("audit", "books and records", "subcontractor controls"),
     }
 )
+
+logger = logging.getLogger(__name__)
 
 
 def chunk_document(state: PipelineState, target_chunk_size: int = 900) -> PipelineState:
@@ -155,6 +158,12 @@ async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineS
     candidates: list[ExtractedClauseCandidate] = []
 
     if generator.available and settings.pipeline_mode != "mock":
+        logger.info(
+            "session=%s stage=extracting path=model model_id=%s chunks=%s",
+            state.session_id,
+            settings.hf_extractor_model_id,
+            len(state.chunks),
+        )
         for chunk in state.chunks:
             prompt = (
                 "You extract legal clause candidates from contract text. "
@@ -179,12 +188,23 @@ async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineS
                             candidates.append(candidate)
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("extracting", f"Extractor model failed for {chunk.chunk_id}: {exc}", used_fallback=True)
+                logger.warning(
+                    "session=%s stage=extracting path=model_failed chunk=%s error=%s",
+                    state.session_id,
+                    chunk.chunk_id,
+                    exc,
+                )
 
     if len(candidates) < 4:
         heuristic_candidates = _build_heuristic_candidates(state.chunks)
         if heuristic_candidates:
             candidates = heuristic_candidates
             state.add_diagnostic("extracting", "Used heuristic clause extraction fallback.", used_fallback=True)
+            logger.info(
+                "session=%s stage=extracting path=heuristic clauses=%s",
+                state.session_id,
+                len(candidates),
+            )
 
     if len(candidates) < 2:
         raise ValueError("Extractor did not produce enough plausible clauses.")
@@ -199,4 +219,9 @@ async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineS
         deduped.append(candidate)
 
     state.extracted_clauses = deduped[:12]
+    logger.info(
+        "session=%s stage=extracting completed clauses=%s",
+        state.session_id,
+        len(state.extracted_clauses),
+    )
     return state
