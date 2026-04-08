@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -28,7 +29,7 @@ class CloudflareLoraScorer:
         prompt: str,
         max_tokens: int = 400,
         temperature: float = 0.05,
-    ) -> dict[str, Any]:
+    ) -> tuple[dict[str, Any], float]:
         if not self.available:
             raise RuntimeError("Cloudflare LoRA scorer is not configured.")
 
@@ -53,8 +54,9 @@ class CloudflareLoraScorer:
             method="POST",
         )
 
+        started = time.perf_counter()
         try:
-            with urlopen(request, timeout=90) as response:
+            with urlopen(request, timeout=self.settings.cf_scorer_timeout_seconds) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
             raise RuntimeError(f"Cloudflare scorer request failed with status {exc.code}.") from exc
@@ -68,10 +70,10 @@ class CloudflareLoraScorer:
         result = body.get("result")
         if isinstance(result, dict):
             if isinstance(result.get("response"), str):
-                return extract_json_object(result["response"])
+                return extract_json_object(result["response"]), time.perf_counter() - started
             if isinstance(result.get("result"), str):
-                return extract_json_object(result["result"])
-            return result
+                return extract_json_object(result["result"]), time.perf_counter() - started
+            return result, time.perf_counter() - started
         if isinstance(result, str):
-            return extract_json_object(result)
+            return extract_json_object(result), time.perf_counter() - started
         raise RuntimeError("Cloudflare scorer response did not contain a parseable result.")

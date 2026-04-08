@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from statistics import fmean
+from time import perf_counter
 from typing import Any
 
 from config import Settings
@@ -135,6 +137,7 @@ def _normalize_score_payload(payload: dict[str, Any], clause: ExtractedClauseCan
 async def score_clauses(state: PipelineState, settings: Settings) -> PipelineState:
     cloudflare_scorer = CloudflareLoraScorer(settings)
     scored: list[ScoredClauseCandidate] = []
+    started = perf_counter()
 
     if cloudflare_scorer.available and settings.pipeline_mode != "mock":
         logger.info(
@@ -151,20 +154,29 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
             len(state.extracted_clauses),
         )
 
-    for clause in state.extracted_clauses:
+    async def score_one_clause(clause: ExtractedClauseCandidate, semaphore: asyncio.Semaphore) -> ScoredClauseCandidate:
         payload: dict[str, Any] | None = None
         if cloudflare_scorer.available and settings.pipeline_mode != "mock":
             prompt = (
                 "You are a legal contract risk scoring model. "
-                "Return only JSON with keys: clause_category, risk_severity, is_unfair, risk_factors, rationale. "
+                "Return only one valid JSON object. Do not include markdown, code fences, or any explanatory text. "
+                'Use exactly these keys: "clause_category", "risk_severity", "is_unfair", "risk_factors", "rationale". '
                 "risk_severity must be an integer from 1 to 5.\n\n"
                 f"Clause text:\n{clause.raw_text}"
             )
             try:
-                payload = cloudflare_scorer.generate_json(
-                    prompt=prompt,
-                    max_tokens=220,
-                    temperature=0.02,
+                async with semaphore:
+                    payload, duration = await asyncio.to_thread(
+                        cloudflare_scorer.generate_json,
+                        prompt=prompt,
+                        max_tokens=220,
+                        temperature=0.02,
+                    )
+                logger.info(
+                    "session=%s stage=scoring path=cloudflare_success clause=%s duration=%.2fs",
+                    state.session_id,
+                    clause.clause_id,
+                    duration,
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
@@ -186,16 +198,25 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
                 clause.clause_id,
             )
 
-        scored.append(_normalize_score_payload(payload, clause))
+        return _normalize_score_payload(payload, clause)
+
+    semaphore = asyncio.Semaphore(settings.cf_scorer_concurrency)
+    scored = list(
+        await asyncio.gather(
+            *(score_one_clause(clause, semaphore) for clause in state.extracted_clauses)
+        )
+    )
 
     if len(scored) != len(state.extracted_clauses):
         raise ValueError("Scoring did not return a result for every extracted clause.")
 
     state.scored_clauses = scored
     logger.info(
-        "session=%s stage=scoring completed overall_score=%s clauses=%s",
+        "session=%s stage=scoring completed overall_score=%s clauses=%s duration=%.2fs concurrency=%s",
         state.session_id,
         build_overall_score(state.scored_clauses),
         len(state.scored_clauses),
+        perf_counter() - started,
+        settings.cf_scorer_concurrency,
     )
     return state
