@@ -157,26 +157,31 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
     async def score_one_clause(clause: ExtractedClauseCandidate, semaphore: asyncio.Semaphore) -> ScoredClauseCandidate:
         payload: dict[str, Any] | None = None
         if cloudflare_scorer.available and settings.pipeline_mode != "mock":
-            prompt = (
+            system_prompt = (
                 "You are a legal contract risk scoring model. "
-                "Return only one valid JSON object. Do not include markdown, code fences, or any explanatory text. "
-                'Use exactly these keys: "clause_category", "risk_severity", "is_unfair", "risk_factors", "rationale". '
-                "risk_severity must be an integer from 1 to 5.\n\n"
-                f"Clause text:\n{clause.raw_text}"
+                "Return a concise structured JSON assessment only."
+            )
+            user_prompt = (
+                "Assess this contract clause for legal risk.\n"
+                f"Clause text:\n{clause.raw_text}\n\n"
+                f"Detected category hint: {clause.predicted_category}\n"
+                "Use severity 1 for very low risk and 5 for very high risk."
             )
             try:
                 async with semaphore:
-                    payload, duration = await asyncio.to_thread(
+                    payload, duration, usage = await asyncio.to_thread(
                         cloudflare_scorer.generate_json,
-                        prompt=prompt,
-                        max_tokens=220,
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        max_tokens=180,
                         temperature=0.02,
                     )
                 logger.info(
-                    "session=%s stage=scoring path=cloudflare_success clause=%s duration=%.2fs",
+                    "session=%s stage=scoring path=cloudflare_success clause=%s duration=%.2fs total_tokens=%s",
                     state.session_id,
                     clause.clause_id,
                     duration,
+                    usage.get("total_tokens", 0),
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
