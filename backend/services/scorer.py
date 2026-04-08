@@ -138,6 +138,7 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
     cloudflare_scorer = CloudflareLoraScorer(settings)
     scored: list[ScoredClauseCandidate] = []
     started = perf_counter()
+    remote_limit = min(settings.max_remote_scored_clauses, len(state.extracted_clauses))
 
     if cloudflare_scorer.available and settings.pipeline_mode != "mock":
         logger.info(
@@ -145,7 +146,7 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
             state.session_id,
             settings.cf_risk_base_model,
             settings.cf_risk_lora_name,
-            len(state.extracted_clauses),
+            remote_limit,
         )
     elif settings.pipeline_mode != "mock":
         logger.info(
@@ -154,25 +155,26 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
             len(state.extracted_clauses),
         )
 
-    async def score_one_clause(clause: ExtractedClauseCandidate, semaphore: asyncio.Semaphore) -> ScoredClauseCandidate:
+    async def score_one_clause(
+        clause: ExtractedClauseCandidate,
+        semaphore: asyncio.Semaphore,
+        use_remote: bool,
+    ) -> ScoredClauseCandidate:
         payload: dict[str, Any] | None = None
-        if cloudflare_scorer.available and settings.pipeline_mode != "mock":
-            system_prompt = (
-                "You are a legal contract risk scoring model. "
-                "Return a concise structured JSON assessment only."
-            )
-            user_prompt = (
-                "Assess this contract clause for legal risk.\n"
+        if use_remote and cloudflare_scorer.available and settings.pipeline_mode != "mock":
+            prompt = (
+                "You are a legal contract risk scoring model.\n"
+                "Return only one JSON object. Do not include markdown, code fences, or any text before or after the JSON.\n"
+                'Use exactly these keys: "clause_category", "risk_severity", "is_unfair", "risk_factors", "rationale".\n'
+                "risk_severity must be an integer from 1 to 5.\n\n"
                 f"Clause text:\n{clause.raw_text}\n\n"
                 f"Detected category hint: {clause.predicted_category}\n"
-                "Use severity 1 for very low risk and 5 for very high risk."
             )
             try:
                 async with semaphore:
-                    payload, duration, usage = await asyncio.to_thread(
+                    payload, duration, usage, raw_text = await asyncio.to_thread(
                         cloudflare_scorer.generate_json,
-                        system_prompt=system_prompt,
-                        user_prompt=user_prompt,
+                        prompt=prompt,
                         max_tokens=180,
                         temperature=0.02,
                     )
@@ -184,14 +186,18 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
                     usage.get("total_tokens", 0),
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
+                snippet = ""
+                if "raw_text" in locals() and isinstance(raw_text, str):
+                    snippet = raw_text[:220].replace("\n", " ")
                 state.add_diagnostic("scoring", f"Scorer model failed for {clause.clause_id}: {exc}", used_fallback=True)
                 logger.warning(
-                    "session=%s stage=scoring path=cloudflare_failed clause=%s base_model=%s lora=%s error=%s",
+                    "session=%s stage=scoring path=cloudflare_failed clause=%s base_model=%s lora=%s error=%s raw_snippet=%s",
                     state.session_id,
                     clause.clause_id,
                     settings.cf_risk_base_model,
                     settings.cf_risk_lora_name,
                     exc,
+                    snippet,
                 )
 
         if payload is None:
@@ -208,7 +214,10 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
     semaphore = asyncio.Semaphore(settings.cf_scorer_concurrency)
     scored = list(
         await asyncio.gather(
-            *(score_one_clause(clause, semaphore) for clause in state.extracted_clauses)
+            *(
+                score_one_clause(clause, semaphore, index < remote_limit)
+                for index, clause in enumerate(state.extracted_clauses)
+            )
         )
     )
 
@@ -217,10 +226,11 @@ async def score_clauses(state: PipelineState, settings: Settings) -> PipelineSta
 
     state.scored_clauses = scored
     logger.info(
-        "session=%s stage=scoring completed overall_score=%s clauses=%s duration=%.2fs concurrency=%s",
+        "session=%s stage=scoring completed overall_score=%s clauses=%s remote_limit=%s duration=%.2fs concurrency=%s",
         state.session_id,
         build_overall_score(state.scored_clauses),
         len(state.scored_clauses),
+        remote_limit,
         perf_counter() - started,
         settings.cf_scorer_concurrency,
     )

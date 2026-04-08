@@ -26,11 +26,10 @@ class CloudflareLoraScorer:
     def generate_json(
         self,
         *,
-        system_prompt: str,
-        user_prompt: str,
+        prompt: str,
         max_tokens: int = 400,
         temperature: float = 0.05,
-    ) -> tuple[dict[str, Any], float, dict[str, int]]:
+    ) -> tuple[dict[str, Any], float, dict[str, int], str]:
         if not self.available:
             raise RuntimeError("Cloudflare LoRA scorer is not configured.")
 
@@ -39,32 +38,9 @@ class CloudflareLoraScorer:
             f"{self.settings.cf_account_id}/ai/run/{self.settings.cf_risk_base_model}"
         )
         payload = {
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            "prompt": prompt,
+            "raw": True,
             "lora": self.settings.cf_risk_lora_name,
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {
-                    "type": "object",
-                    "properties": {
-                        "clause_category": {"type": "string"},
-                        "risk_severity": {"type": "integer", "minimum": 1, "maximum": 5},
-                        "is_unfair": {"type": "boolean"},
-                        "risk_factors": {"type": "array", "items": {"type": "string"}},
-                        "rationale": {"type": "string"},
-                    },
-                    "required": [
-                        "clause_category",
-                        "risk_severity",
-                        "is_unfair",
-                        "risk_factors",
-                        "rationale",
-                    ],
-                    "additionalProperties": False,
-                },
-            },
             "max_tokens": max_tokens,
             "temperature": temperature,
         }
@@ -99,13 +75,14 @@ class CloudflareLoraScorer:
             "total_tokens": int(usage.get("total_tokens", 0) or 0),
         }
         if isinstance(result, dict):
-            if isinstance(result.get("response"), dict):
-                return result["response"], time.perf_counter() - started, normalized_usage
             if isinstance(result.get("response"), str):
-                return extract_json_object(result["response"]), time.perf_counter() - started, normalized_usage
+                raw_text = result["response"]
+                return extract_json_object(raw_text), time.perf_counter() - started, normalized_usage, raw_text
             if isinstance(result.get("result"), str):
-                return extract_json_object(result["result"]), time.perf_counter() - started, normalized_usage
-            return result, time.perf_counter() - started, normalized_usage
+                raw_text = result["result"]
+                return extract_json_object(raw_text), time.perf_counter() - started, normalized_usage, raw_text
+            raw_text = json.dumps(result)
+            return result, time.perf_counter() - started, normalized_usage, raw_text
         if isinstance(result, str):
-            return extract_json_object(result), time.perf_counter() - started, normalized_usage
+            return extract_json_object(result), time.perf_counter() - started, normalized_usage, result
         raise RuntimeError("Cloudflare scorer response did not contain a parseable result.")
