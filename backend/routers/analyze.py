@@ -1,32 +1,26 @@
 import asyncio
-from time import perf_counter
 from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from models.schemas import AnalyzeResponse, ResultsResponse
-from services.mock_pipeline import build_mock_results
-from services.parser import parse_document
+from services.pipeline import run_analysis_pipeline
 
 router = APIRouter(tags=["analysis"])
 
 ALLOWED_TYPES = {".pdf", ".docx", ".txt"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
 SESSION_STORE: dict[str, ResultsResponse] = {}
+FAILED_SESSIONS: dict[str, str] = {}
 IN_PROGRESS: set[str] = set()
 
 
 async def _run_pipeline(session_id: str, filename: str, file_bytes: bytes) -> None:
-    started = perf_counter()
     try:
-        await asyncio.sleep(1)
-        metadata = await parse_document(file_bytes, filename)
-        await asyncio.sleep(2)
-        await asyncio.sleep(2)
-        await asyncio.sleep(3)
-        results = build_mock_results(session_id, str(metadata["document_name"]), int(metadata["page_count"]))
-        results.processing_time_seconds = round(perf_counter() - started, 1)
+        results = await run_analysis_pipeline(session_id, filename, file_bytes)
         SESSION_STORE[session_id] = results
+    except Exception as exc:
+        FAILED_SESSIONS[session_id] = str(exc)
     finally:
         IN_PROGRESS.discard(session_id)
 
@@ -59,4 +53,6 @@ async def get_results(session_id: str) -> ResultsResponse:
         return SESSION_STORE[session_id]
     if session_id in IN_PROGRESS:
         raise HTTPException(status_code=status.HTTP_202_ACCEPTED, detail="Analysis still processing.")
+    if session_id in FAILED_SESSIONS:
+        raise HTTPException(status_code=500, detail=FAILED_SESSIONS[session_id])
     raise HTTPException(status_code=404, detail="Session not found.")
