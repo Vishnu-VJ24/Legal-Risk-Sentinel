@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Mapping
 from time import perf_counter
 from typing import Any, Callable
 
@@ -108,6 +109,14 @@ def _assemble_results(state: PipelineState) -> ResultsResponse:
     )
 
 
+def _coerce_pipeline_state(state: Any) -> PipelineState:
+    if isinstance(state, PipelineState):
+        return state
+    if isinstance(state, Mapping):
+        return PipelineState.model_validate(dict(state))
+    raise TypeError(f"Unsupported pipeline state type: {type(state)!r}")
+
+
 async def _run_pipeline_sequential(state: PipelineState, settings: Settings, file_bytes: bytes) -> PipelineState:
     for node in (_parse_node, _chunk_node, _extract_node, _score_node, _explain_node):
         state = await node(state, settings, file_bytes)
@@ -165,9 +174,9 @@ async def run_analysis_pipeline(session_id: str, filename: str, file_bytes: byte
     try:
         graph = _build_graph(settings, file_bytes)
         if graph is not None:
-            state = await graph.ainvoke(state)
+            state = _coerce_pipeline_state(await graph.ainvoke(state))
         else:
-            state = await _run_pipeline_sequential(state, settings, file_bytes)
+            state = _coerce_pipeline_state(await _run_pipeline_sequential(state, settings, file_bytes))
         results = _assemble_results(state)
     except Exception as exc:
         if settings.pipeline_mode == "real":
