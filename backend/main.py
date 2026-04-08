@@ -1,7 +1,17 @@
+import logging
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers.analyze import router as analyze_router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s %(name)s %(message)s",
+    stream=sys.stdout,
+    force=True,
+)
 
 app = FastAPI(title="LexAI API", version="0.1.0")
 

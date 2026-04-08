@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
@@ -7,6 +8,7 @@ from models.schemas import AnalyzeResponse, ResultsResponse
 from services.pipeline import run_analysis_pipeline
 
 router = APIRouter(tags=["analysis"])
+logger = logging.getLogger(__name__)
 
 ALLOWED_TYPES = {".pdf", ".docx", ".txt"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -17,10 +19,18 @@ IN_PROGRESS: set[str] = set()
 
 async def _run_pipeline(session_id: str, filename: str, file_bytes: bytes) -> None:
     try:
+        logger.info("session=%s analysis_task_started filename=%s size_bytes=%s", session_id, filename, len(file_bytes))
         results = await run_analysis_pipeline(session_id, filename, file_bytes)
         SESSION_STORE[session_id] = results
+        logger.info(
+            "session=%s analysis_task_completed total_clauses=%s overall_score=%s",
+            session_id,
+            results.total_clauses,
+            results.overall_risk_score,
+        )
     except Exception as exc:
         FAILED_SESSIONS[session_id] = str(exc)
+        logger.exception("session=%s analysis_task_failed error=%s", session_id, exc)
     finally:
         IN_PROGRESS.discard(session_id)
 
@@ -37,6 +47,7 @@ async def analyze_document(file: UploadFile = File(...)) -> AnalyzeResponse:
 
     session_id = str(uuid4())
     IN_PROGRESS.add(session_id)
+    logger.info("session=%s analyze_request_received filename=%s size_bytes=%s", session_id, file.filename or "document", len(file_bytes))
     asyncio.create_task(_run_pipeline(session_id, file.filename or "document", file_bytes))
 
     return AnalyzeResponse(
