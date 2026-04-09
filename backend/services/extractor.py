@@ -7,6 +7,7 @@ from collections import OrderedDict
 from config import Settings
 from models.pipeline_state import DocumentChunk, ExtractedClauseCandidate, PipelineState
 from services.inference import HuggingFaceTextGenerator
+from services.structure import build_section_tree, find_chunk_section
 
 MIN_CLAUSE_LENGTH = 80
 
@@ -156,6 +157,8 @@ def _normalize_candidate_payload(
 async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineState:
     generator = HuggingFaceTextGenerator(settings)
     candidates: list[ExtractedClauseCandidate] = []
+    sections = build_section_tree(state.pages)
+    section_lookup = {section.node_id: section for section in sections}
 
     if generator.available and settings.pipeline_mode != "mock":
         logger.info(
@@ -185,6 +188,11 @@ async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineS
                             continue
                         candidate = _normalize_candidate_payload(raw_clause, chunk, len(candidates) + 1)
                         if candidate:
+                            section = find_chunk_section(chunk, sections)
+                            if section:
+                                candidate.section_id = section.node_id
+                                candidate.section_title = section.title
+                                candidate.parent_section_id = section.parent_id
                             candidates.append(candidate)
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("extracting", f"Extractor model failed for {chunk.chunk_id}: {exc}", used_fallback=True)
@@ -216,6 +224,16 @@ async def extract_clauses(state: PipelineState, settings: Settings) -> PipelineS
         if normalized in seen_normalized:
             continue
         seen_normalized.add(normalized)
+        if not candidate.section_id:
+            source_chunk = next((chunk for chunk in state.chunks if chunk.chunk_id == candidate.source_chunk_id), None)
+            if source_chunk:
+                section = find_chunk_section(source_chunk, sections)
+                if section:
+                    candidate.section_id = section.node_id
+                    candidate.section_title = section.title
+                    candidate.parent_section_id = section.parent_id
+        if candidate.section_id and candidate.section_id in section_lookup and not candidate.section_title:
+            candidate.section_title = section_lookup[candidate.section_id].title
         deduped.append(candidate)
 
     state.extracted_clauses = deduped[:12]

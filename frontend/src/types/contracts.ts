@@ -23,6 +23,9 @@ export interface ClauseResult {
   type: string;
   text: string;
   page_number: number;
+  section_id?: string;
+  section_title?: string;
+  parent_section_id?: string;
   bbox: [number, number, number, number];
   risk_score: number;
   risk_axes: ClauseRiskAxes;

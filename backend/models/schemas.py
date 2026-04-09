@@ -27,6 +27,9 @@ class ClauseResult(BaseModel):
     type: str
     text: str
     page_number: int
+    section_id: str | None = None
+    section_title: str | None = None
+    parent_section_id: str | None = None
     bbox: tuple[float, float, float, float]
     risk_score: float
     risk_axes: RiskAxes

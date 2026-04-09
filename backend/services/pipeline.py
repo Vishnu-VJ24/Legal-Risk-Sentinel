@@ -70,6 +70,7 @@ async def _explain_node(state: PipelineState, settings: Settings, _: bytes) -> P
 
 def _assemble_results(state: PipelineState) -> ResultsResponse:
     explained_by_id = {clause.clause_id: clause for clause in state.explained_clauses}
+    extracted_by_id = {clause.clause_id: clause for clause in state.extracted_clauses}
     clauses: list[ClauseResult] = []
 
     for clause in state.scored_clauses:
@@ -83,6 +84,9 @@ def _assemble_results(state: PipelineState) -> ResultsResponse:
                 type=clause.clause_category,
                 text=clause.clause_text,
                 page_number=clause.page_number,
+                section_id=extracted_by_id.get(clause.clause_id).section_id if clause.clause_id in extracted_by_id else None,
+                section_title=extracted_by_id.get(clause.clause_id).section_title if clause.clause_id in extracted_by_id else None,
+                parent_section_id=extracted_by_id.get(clause.clause_id).parent_section_id if clause.clause_id in extracted_by_id else None,
                 bbox=clause.bbox,
                 risk_score=score,
                 risk_axes=RiskAxes(**axes),

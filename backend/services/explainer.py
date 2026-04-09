@@ -78,11 +78,22 @@ async def explain_clauses(state: PipelineState, settings: Settings) -> PipelineS
                 f"Model rationale: {clause.rationale}\n"
             )
             try:
+                raw_text = generator.generate_text_with_fallback(
+                    primary_model_id=settings.hf_reasoning_model_id,
+                    fallback_model_id=settings.hf_reasoning_fallback_model_id,
+                    prompt=prompt,
+                    max_new_tokens=360,
+                    temperature=0.1,
+                )
                 payload = generator.generate_json(
                     model_id=settings.hf_explainer_model_id,
-                    prompt=prompt,
-                    max_new_tokens=600,
-                    temperature=0.2,
+                    prompt=(
+                        "Convert the following reasoning into strict JSON with keys "
+                        "explanation, renegotiation_suggestion, similar_safe_clause.\n\n"
+                        f"{raw_text}"
+                    ),
+                    max_new_tokens=260,
+                    temperature=0.0,
                 )
             except Exception as exc:  # pragma: no cover - depends on remote model
                 state.add_diagnostic("explaining", f"Explainer model failed for {clause.clause_id}: {exc}", used_fallback=True)

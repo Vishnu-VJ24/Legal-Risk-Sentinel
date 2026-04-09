@@ -155,8 +155,9 @@ async def _repair_cloudflare_output(
         f"{raw_text}"
     )
     repaired = await asyncio.to_thread(
-        generator.generate_text,
-        model_id=settings.hf_extractor_model_id,
+        generator.generate_text_with_fallback,
+        primary_model_id=settings.hf_reasoning_model_id,
+        fallback_model_id=settings.hf_reasoning_fallback_model_id,
         prompt=repair_prompt,
         max_new_tokens=260,
         temperature=0.0,

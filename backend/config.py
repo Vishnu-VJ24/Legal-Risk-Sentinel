@@ -13,6 +13,8 @@ class Settings(BaseModel):
     hf_token: str | None = None
     hf_extractor_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
     hf_explainer_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
+    hf_reasoning_model_id: str = "Qwen/Qwen3-8B"
+    hf_reasoning_fallback_model_id: str = "Qwen/Qwen2.5-3B-Instruct"
     cf_account_id: str | None = None
     cf_api_token: str | None = None
     cf_risk_base_model: str = "@cf/mistral/mistral-7b-instruct-v0.2-lora"
@@ -38,6 +40,8 @@ def get_settings() -> Settings:
         hf_token=getenv("HF_TOKEN"),
         hf_extractor_model_id=getenv("HF_EXTRACTOR_MODEL_ID", "Qwen/Qwen2.5-3B-Instruct"),
         hf_explainer_model_id=getenv("HF_EXPLAINER_MODEL_ID", "Qwen/Qwen2.5-3B-Instruct"),
+        hf_reasoning_model_id=getenv("HF_REASONING_MODEL_ID", "Qwen/Qwen3-8B"),
+        hf_reasoning_fallback_model_id=getenv("HF_REASONING_FALLBACK_MODEL_ID", "Qwen/Qwen2.5-3B-Instruct"),
         cf_account_id=getenv("CF_ACCOUNT_ID"),
         cf_api_token=getenv("CF_API_TOKEN"),
         cf_risk_base_model=getenv("CF_RISK_BASE_MODEL", "@cf/mistral/mistral-7b-instruct-v0.2-lora"),

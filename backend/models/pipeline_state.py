@@ -18,6 +18,9 @@ class ExtractedClauseCandidate(BaseModel):
     predicted_category: str
     page_number: int
     source_chunk_id: str | None = None
+    section_id: str | None = None
+    section_title: str | None = None
+    parent_section_id: str | None = None
     bbox: tuple[float, float, float, float] | None = None
 
 
