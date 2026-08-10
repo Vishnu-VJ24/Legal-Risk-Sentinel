@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+.ruff_cache/
+.pytest_cache/
+.uv-cache/
+build/
+dist/
+wheels/
+*.egg-info
+.DS_Store
+
+# Project specific
+outputs/
+docs/
+uploads/
+.app_data/
+frontend/node_modules/
+frontend/dist/
+
+# Virtual environments
+.venv
+.env
+run_test.txt
+
+# Docs
+Report/

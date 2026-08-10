@@ -1,0 +1,13 @@
+[project]
+name = "api-model-suite"
+version = "0.1.0"
+description = "Standalone CLI for Legal Sentinel backend and model API checks."
+requires-python = ">=3.10"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
+]
+
+[project.scripts]
+api-model-suite = "api_model_suite.cli:main"
