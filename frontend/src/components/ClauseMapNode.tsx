@@ -18,8 +18,8 @@ export interface ClauseNodeData extends Record<string, unknown> {
 }
 
 const severityBorder: Record<string, string> = {
-  CRITICAL: 'border-red-500',
-  HIGH: 'border-orange-500',
+  CRITICAL: 'border-red-600',
+  HIGH: 'border-red-500',
   MEDIUM: 'border-amber-400',
   LOW: 'border-slate-400',
 };
@@ -55,7 +55,7 @@ export const ClauseMapNode: React.FC<NodeProps> = ({ id, data }) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate font-mono text-[11px] font-semibold text-sky-800">{node.identifier}</span>
-            {node.severity && <ShieldAlert size={13} className="shrink-0 text-orange-600" />}
+            {node.severity && <ShieldAlert size={13} className="shrink-0 text-red-600" />}
           </div>
           <p className="mt-1 line-clamp-2 text-xs font-semibold leading-4">{node.title || node.identifier}</p>
         </div>

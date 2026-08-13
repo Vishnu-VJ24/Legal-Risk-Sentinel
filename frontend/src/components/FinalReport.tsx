@@ -47,7 +47,7 @@ export const FinalReport: React.FC<FinalReportProps> = ({ data }) => {
           <div className="text-right">
             <span className="text-sm font-semibold uppercase text-muted-foreground">Overall Risk Profile</span>
             <div className="mt-1">
-              <Badge className="border border-orange-200 bg-orange-50 text-sm uppercase text-orange-600">
+              <Badge className="border border-red-200 bg-red-50 text-sm uppercase text-red-600">
                 {String(data.reportData!.overall_risk_score || data.reportData!.overall_document_risk)}
               </Badge>
             </div>

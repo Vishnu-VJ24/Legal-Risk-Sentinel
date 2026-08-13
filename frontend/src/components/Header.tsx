@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, FileText, Link2, Shield, Square } from 'lucide-react';
+import { AlertTriangle, FileText, Link2, Square } from 'lucide-react';
 import { usePipeline } from '../context/PipelineContext';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -32,7 +32,9 @@ export const Header: React.FC = () => {
 
   const stageColor = stage === 'REPORT_READY' ? 'default' : 'secondary';
   const currentStageIndex = STAGES.indexOf(stage);
-  const progressPercent = progressMeta?.progressPercent ?? Math.round(((currentStageIndex + 1) / STAGES.length) * 100);
+  const progressPercent = stage === 'REPORT_READY' && !isLoading
+    ? 100
+    : progressMeta?.progressPercent ?? Math.round(((currentStageIndex + 1) / STAGES.length) * 100);
   const summary = data?.summary;
   const meta = data?.meta;
   const metrics = [
@@ -46,19 +48,13 @@ export const Header: React.FC = () => {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <div className="rounded-xl bg-[linear-gradient(135deg,#0f172a,#1d4ed8)] p-2 text-white shadow-lg shadow-sky-100">
-              <Shield size={16} />
-            </div>
-            <div className="min-w-0">
+          <div className="min-w-0">
               <h1 className="text-base font-semibold tracking-tight text-slate-900">Legal Sentinel</h1>
               <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <span className="flex items-center">
                   <FileText size={13} className="mr-1.5 shrink-0" />
                   <span className="max-w-[260px] truncate">{fileName || 'Contract.pdf'}</span>
                 </span>
-                <Badge variant="outline" className="border-sky-200 bg-sky-50 text-[10px] uppercase tracking-[0.18em] text-sky-700">
-                  Demo Build
-                </Badge>
               </div>
             </div>
             {metrics.length > 0 && (
