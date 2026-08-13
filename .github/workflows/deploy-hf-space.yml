@@ -1,0 +1,55 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Create clean deploy snapshot
+        run: |
+          # Work in a temp dir so we never modify the checked-out source
+          DEPLOY_DIR=$(mktemp -d)
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='frontend/dist' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.env' \
+            --exclude='*.pdf' \
+            --exclude='/tmp' \
+            --exclude='outputs' \
+            --exclude='benchmarks' \
+            --exclude='api_model_suite' \
+            ./ "$DEPLOY_DIR/"
+          echo "DEPLOY_DIR=$DEPLOY_DIR" >> $GITHUB_ENV
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Actions"
+
+          cd "$DEPLOY_DIR"
+          git init
+          git checkout -b main
+          git add .
+          git commit -m "Deploy from GitHub: ${{ github.sha }}"
+
+          git remote add space \
+            https://Vishnu-VJ24:${HF_TOKEN}@huggingface.co/spaces/Vishnu-VJ24/legal-risk-sentinel
+
+          git push space main --force

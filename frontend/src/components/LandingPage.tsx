@@ -18,14 +18,8 @@ import { cn } from '../lib/utils';
 
 const CONTRIBUTORS = [
   {
-    name: 'Pranav Pant',
-    role: 'Product, Backend, Deployment',
-    portfolioHref: 'https://pranavds-codes.github.io/portfolio/',
-    linkedinHref: 'https://www.linkedin.com/in/pranav-pant-ds/',
-  },
-  {
     name: 'Vishnu Jayanth Senthil Kumar',
-    role: 'Frontend, Experience, Analysis',
+    role: 'Product, Frontend, Backend, Deployment',
     portfolioHref: 'https://vishnu-vj24.github.io/Vishnu-Portfolio/',
     linkedinHref: 'https://www.linkedin.com/in/vishnu--vj/',
   },

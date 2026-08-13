@@ -1,5 +1,5 @@
 ---
-title: Legal Sentinel
+title: Legal Risk Sentinel
 emoji: ⚖️
 colorFrom: blue
 colorTo: indigo
