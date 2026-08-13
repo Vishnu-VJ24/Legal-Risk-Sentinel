@@ -50,6 +50,6 @@ jobs:
           git commit -m "Deploy from GitHub: ${{ github.sha }}"
 
           git remote add space \
-            https://Vishnu-VJ24:${HF_TOKEN}@huggingface.co/spaces/Vishnu-VJ24/legal-risk-sentinel
+            https://VJ24:${HF_TOKEN}@huggingface.co/spaces/VJ24/legal-risk-sentinel
 
           git push space main --force
